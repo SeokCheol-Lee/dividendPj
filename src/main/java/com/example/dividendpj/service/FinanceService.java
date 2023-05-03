@@ -3,11 +3,14 @@ package com.example.dividendpj.service;
 import com.example.dividendpj.model.Company;
 import com.example.dividendpj.model.Dividend;
 import com.example.dividendpj.model.ScrapedResult;
+import com.example.dividendpj.model.constants.CacheKey;
 import com.example.dividendpj.persist.CompanyRepository;
 import com.example.dividendpj.persist.DividendRepository;
 import com.example.dividendpj.persist.entity.CompanyEntity;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,13 +18,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class FinanceService {
 
     private final CompanyRepository companyRepository;
     private final DividendRepository dividendRepository;
+
+    @Cacheable(key = "#companyName", value = CacheKey.KEY_FIANCE)
     public ScrapedResult getDividendByCompanyName(String companyName){
+        log.info("search company -> " + companyName);
 
         //1. 회사명을 기준으로 회사 정보를 조회
         CompanyEntity company = this.companyRepository.findByName(companyName)
@@ -40,15 +47,9 @@ public class FinanceService {
         }*/
 
         List<Dividend> dividends = dividendEntities.stream()
-                .map(e -> Dividend.builder()
-                        .date(e.getDate())
-                        .dividend(e.getDividend())
-                        .build())
+                .map(e -> new Dividend(e.getDate(), e.getDividend()))
                 .collect(Collectors.toList());
 
-        return new ScrapedResult(Company.builder()
-                .ticker(company.getTicker())
-                .name(company.getName())
-                .build(), dividends);
+        return new ScrapedResult(new Company(company.getTicker(),company.getName()),dividends);
     }
 }
