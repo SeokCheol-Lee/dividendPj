@@ -2,6 +2,7 @@ package com.example.dividendpj.security;
 
 import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.ObjectUtils;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String TOKEN_HEADER = "Authorization";
@@ -29,6 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             //토큰 유효성 검증
             Authentication auth = this.tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(auth);
+
+            log.info(String.format("[%s] -> %s", this.tokenProvider.getUsername(token), request.getRequestURI()));
         }
         filterChain.doFilter(request, response);
     }

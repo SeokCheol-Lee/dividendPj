@@ -1,5 +1,6 @@
 package com.example.dividendpj.service;
 
+import com.example.dividendpj.exception.impl.NoCompanyException;
 import com.example.dividendpj.model.Company;
 import com.example.dividendpj.model.Dividend;
 import com.example.dividendpj.model.ScrapedResult;
@@ -32,7 +33,7 @@ public class FinanceService {
 
         //1. 회사명을 기준으로 회사 정보를 조회
         CompanyEntity company = this.companyRepository.findByName(companyName)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회사명입니다."));
+                .orElseThrow(() -> new NoCompanyException());
 
         // 2. 조회된 회사 ID로 배당금 정보 조회
         List<Dividend> dividendEntities = this.dividendRepository.findAllByCompanyId(company.getId());
